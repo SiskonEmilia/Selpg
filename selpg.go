@@ -134,7 +134,7 @@ func main() {
 		fmt.Printf("%s", resultData)
 	} else {
 		// Printer //
-		cmd := exec.Command("cat" /*, "-d"+*destinationPrinter*/)
+		cmd := exec.Command("lp", "-d"+*destinationPrinter)
 		lpStdin, err := cmd.StdinPipe()
 
 		if err != nil {
