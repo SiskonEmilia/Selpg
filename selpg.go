@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -109,18 +110,17 @@ func main() {
 			os.Exit(1)
 		}
 
-		resultData = strings.Join(pagedData[*startNumber-1:*endNumber+1], "")
+		resultData = strings.Join(pagedData[*startNumber-1:*endNumber], "")
 	} else {
 		// LineNumber //
 		lines := strings.SplitAfter(data, "\n")
-
 		if len(lines) < (*endNumber-1)*(*lineNumber)+1 {
 			l.Println("Invalid flag values! Too large endNumber!")
 			flag.Usage()
 			os.Exit(1)
 		}
 		if len(lines) < *endNumber*(*lineNumber) {
-			resultData = strings.Join(lines[(*startNumber)*(*lineNumber)-(*lineNumber):len(lines)], "")
+			resultData = strings.Join(lines[(*startNumber)*(*lineNumber)-(*lineNumber):], "")
 		} else {
 			resultData = strings.Join(lines[(*startNumber)*(*lineNumber)-(*lineNumber):(*endNumber)*(*lineNumber)], "")
 		}
@@ -131,27 +131,19 @@ func main() {
 	// StdOut or Printer? //
 	if *destinationPrinter == "" {
 		// StdOut //
-
-		_, err := writer.Write([]byte(resultData))
-
-		if err != nil {
-			l.Println("Error occured when writing to stdout:\n", err.Error())
-			os.Exit(1)
-		}
-
+		fmt.Printf("%s", resultData)
 	} else {
 		// Printer //
-		cmd := exec.Command("lp", "-d"+*destinationPrinter)
+		cmd := exec.Command("cat" /*, "-d"+*destinationPrinter*/)
 		lpStdin, err := cmd.StdinPipe()
 
 		if err != nil {
 			l.Println("Error occured when trying to send data to lp:\n", err.Error())
 			os.Exit(1)
 		}
-
 		go func() {
 			defer lpStdin.Close()
-			lpStdin.Write([]byte(resultData))
+			io.WriteString(lpStdin, resultData)
 		}()
 
 		out, err := cmd.CombinedOutput()
